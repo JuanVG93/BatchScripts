@@ -1,0 +1,35 @@
+@ECHO OFF
+TITLE Port checking tool
+
+:choice
+set /p c=Port checking tool for Windows Firewall [PRESS ENTER FOR OPTIONS]
+choice /c 12 /M "Press 1 to display all allowed ports. Press 2 to search for a specific port"
+IF ERRORLEVEL 2 GOTO :Port_Search
+IF ERRORLEVEL 1 GOTO :Allport_Search
+
+:Port_Search
+set /p "port=Enter the portnumber to check if this is allowed by the firewall: "
+goto :script
+pause
+
+:script
+echo.
+echo Port   Protocol  Version  Program
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+netsh firewall show state | find /i "%port%" 
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+if errorlevel 1 (
+	echo Port has not been found
+	echo This could mean it is currently blocked by Windows Firewall or another application that manages the firewall
+) 
+
+
+pause
+GOTO :choice
+exit
+
+:Allport_Search
+netsh firewall show state
+pause
+GOTO :choice
+exit
