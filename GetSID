@@ -1,0 +1,35 @@
+@ECHO OFF
+TITLE Search for SID
+
+:choice
+set /p c=SID checking tool [PRESS ENTER FOR OPTIONS]
+choice /c 12 /M "Press 1 to search for the current logged in user. Press 2 to search for a username"
+IF ERRORLEVEL 2 GOTO :Search_User
+IF ERRORLEVEL 1 GOTO :Current_User
+
+:Current_User
+echo.
+echo The current logged in user is: %username%
+echo.
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+wmic useraccount where name="%username%" get sid
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+pause
+goto :choice
+exit
+
+:Search_User
+set /p "name=Enter username to search for the SID: "
+goto script
+pause
+
+:script
+echo.
+echo The result below will show you the SID for user: %name%
+echo.
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+wmic useraccount where name="%name%" get sid
+echo =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+pause
+goto :choice
+exit
