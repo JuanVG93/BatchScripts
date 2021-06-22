@@ -1,0 +1,114 @@
+::Written by Juan van Genderen 21/06/2021
+@ECHO off
+setlocal enableextensions enabledelayedexpansion
+TITLE REDACTED_APPLICATION Connectivity Test
+ 
+ 
+:HKLM_Check1
+ECHO We will attempt to diagnose the REDACTED_APPLICATION connection issue
+ECHO.
+ECHO.
+ECHO Check#1: Attempting to find Server Connection Details on Local Machine...
+ECHO.
+ECHO.
+reg query "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\REDACTED_APPLICATION\Server" 2>nul && (ECHO ==========================================================================================
+																			ECHO Key found in: HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\REDACTED_APPLICATION\Server
+																			ECHO ==========================================================================================
+																			ECHO.
+																			ECHO.
+																			ECHO Please ensure that this is the correct server!
+																			ECHO Navigate to this key via the Windows Registry Editor to confirm...
+																			ECHO If this is NOT the correct server, please follow these steps:
+																			ECHO 1. Open the Windows Registry Editor
+																			ECHO 2. Delete the key HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\REDACTED_APPLICATION\Server
+																			ECHO 3. Complete the First Time Run setup in REDACTED_APPLICATION
+																			ECHO.
+																			ECHO.
+																			ECHO Please consult your IT department if you require assistance with the above steps.
+																			ECHO If this is the correct server you may proceed to the next check...
+																			PAUSE
+																			ECHO Proceeding to Check#2
+																			ECHO.
+																			ECHO.
+																			GOTO HKCU_Check) || (ECHO ==========================================================================================
+																								ECHO No Key found: HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\REDACTED_APPLICATION\Server
+																								ECHO ==========================================================================================
+																								ECHO Proceeding to Check#2...
+																								ECHO.
+																								ECHO.
+																								PAUSE
+																								GOTO HKCU_Check)
+
+
+ 
+:HKCU_Check
+ECHO Check#2: Attempting to find Server Connection Details for Current User...
+ECHO.
+ECHO.
+ECHO ------------------------------------------------------------------------------------------
+reg query "HKEY_CURRENT_USER\SOFTWARE\VB and VBA Program Settings\REDACTED_APPLICATION\server" 2>nul && (ECHO ==========================================================================================
+																							ECHO Key found in: HKEY_CURRENT_USER\SOFTWARE\VB and VBA Program Settings\REDACTED_APPLICATION\server
+																							ECHO ==========================================================================================
+																							ECHO.
+																							ECHO.
+																							ECHO ------------------------------------------------------------------------------------------
+																							ECHO.
+																							ECHO.
+																							ECHO Proceeding to Check#3...
+																							GOTO HKLM_Ping) || (ECHO ==========================================================================================
+																												ECHO No Connection Details found...
+																												ECHO Please complete the First Time Run setup in REDACTED_APPLICATION
+																												ECHO.
+																												ECHO.
+																												ECHO Step 1: Start REDACTED_APPLICATION
+																												ECHO Step 2: Wait for a connection error message to appear and click CHANGE
+																												ECHO Step 3: Complete the First Time Run setup
+																												ECHO Run this tool again if you are still having issues...
+																												ECHO ==========================================================================================
+																												PAUSE
+																												EXIT)
+ 
+:HKLM_Ping
+ECHO Check#3: Attempting to confirm whether the server can be contacted from this machine...
+ECHO.
+ECHO.
+for /f "tokens=3" %%a in ('reg query "hkcu\software\vb and vba program settings\REDACTED_APPLICATION\server"  /V Server  ^|findstr /ri "REG_SZ"') do set StrServer=%%a
+REM echo %StrServer%
+FOR /F "tokens=1 delims=\" %%G IN ("%StrServer%") DO set SqlServer=%%G
+ECHO Attempting to ping server: %SqlServer%...
+ping -4 %SqlServer% | find "TTL"
+IF %errorlevel%==0 (
+					ECHO ==========================================================================================
+					ECHO Ping was successful
+					ECHO REDACTED_APPLICATION is configured to connect to server: %SqlServer%
+					ECHO ==========================================================================================
+					ECHO.
+					ECHO.
+					ECHO ------------------------------------------------------------------------------------------
+					ECHO If you are unable to logon to REDACTED_APPLICATION and are using REDACTED_APPLICATION, please check the following:
+					ECHO 1. Ensure your REDACTED_APPLICATION account is not left logged in
+					ECHO 2. Ensure this computer has access to the REDACTED_APPLICATION Data Path
+					ECHO 3. Ensure that your REDACTED_APPLICATION Version is compatible with REDACTED_APPLICATION
+					ECHO ------------------------------------------------------------------------------------------
+					ECHO.
+					ECHO.
+					ECHO ------------------------------------------------------------------------------------------
+					ECHO If REDACTED_APPLICATION is not able to connect to the SQL server, the most common causes for this are: 
+					ECHO 1. Incorrectly configured Firewall
+					ECHO 2. DNS misconfigurations
+					ECHO 3. SQL Service stopped on Server
+					ECHO ------------------------------------------------------------------------------------------
+					ECHO.
+					ECHO.
+					ECHO Try setting up an ODBC connection to confirm if this machine is able to login on the SQL Server...
+					PAUSE
+					EXIT
+					) ELSE (
+					if %errorlevel%==1 (
+					ECHO ==========================================================================================
+					ECHO Ping was NOT successful
+					ECHO Please ensure the server UP and reachable!
+					ECHO ==========================================================================================
+					PAUSE
+					EXIT
+					))
